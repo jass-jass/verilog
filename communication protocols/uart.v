@@ -10,34 +10,24 @@ States  Wait for start bit
         Capture 8 bits of data
         
 */
-
-module RX_uart(input rx, output reg out);
-  reg timer = 0, sample = 0, state = 1'b0;
-  reg data;
-  always
+module RX_uart(input baud, input rx, output reg out);
+  reg state = 1'b0;
+  reg [0:2]data = 3'b000;
+  always@(posedge baud)
   begin
-    #1 timer = timer + 1;
-    if(timer == 9600)
-    begin
-        sample <= 1;
-        timer <= 0;
-    end
-  end
-  always@(posedge sample)
-  begin
-    sample = 0;
     case(state)
-    1'b0:   if(!rx)
-            begin
+    1'b0:   if(rx == 0)
                 state = 1'b1;
-                data = 0;
-            end
-    1'b1:   if(data-8)
+    1'b1:   if(data==3'b111)
+            begin
                 state = 1'b0;
+                data = 3'b000;
+                out = 1;
+            end
             else 
             begin
                 out = rx;
-                data = data + 1;
+                data = data + 3'b001;
             end
     endcase
   end

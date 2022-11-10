@@ -56,22 +56,21 @@ Inputs :  clock ( clk ),
 
 Output :  pwm (pwm)
 */
-module generate_pwm(input clk, input rst, input [3:0] duty, output reg pwm, output reg [3:0] cnt);
+module generate_pwm(input clk, input rst, input [3:0] duty, output reg pwm);
   reg n_off, on;
   up_counter counter(.clk(clk), .rst(rst), .count({a, b, c, d}));
-  always@(a, b, c, d, duty)
+  always@(posedge clk)
   begin
-    cnt = {~a, ~b, ~c, ~d};
-    n_off = (~a^duty[3]) || (~b^duty[2]) || (~c^duty[1]) || (~d^duty[0]); 
-    on = a && b && c && d;
+    n_off <= (~a^duty[3]) || (~b^duty[2]) || (~c^duty[1]) || (~d^duty[0]); 
+    on <= a && b && c && d;
   end
   always@(n_off, on)
   begin
     if(on)
     begin
-      pwm <= 1'b1;
+      pwm = 1'b1;
     end
     else if (~n_off)
-      pwm <= 1'b0;
+      pwm = 1'b0;
   end
 endmodule
